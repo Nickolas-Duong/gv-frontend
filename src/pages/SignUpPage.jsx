@@ -39,7 +39,7 @@ const SignUpPage = () => {
   return (
     <form onSubmit={handleSubmit(submission)}>
       <div className='container'>
-        <MyTextField label="ID" name="id" control={control} placeholder="ID" />
+        <MyTextField label="ID" name="id" control={control} placeholder="ID"/>
         <MyTextField label="First Name" name="firstname" control={control} placeholder="First Name" />
         <MyTextField label="Last Name" name="lastname" control={control} placeholder="Last Name" />
         <MyTextField label="Username" name="username" control={control} placeholder="Username" />
