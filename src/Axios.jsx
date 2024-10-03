@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = 'http://newgv-env.eba-8afbetm7.us-west-1.elasticbeanstalk.com'
+const baseUrl = 'http://127.0.0.1:8000/'
 
 const AxiosInstance = axios.create({
     baseURL: baseUrl,
