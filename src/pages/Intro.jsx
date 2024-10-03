@@ -31,7 +31,7 @@ const Intro = () => {
       {!showLogin && !showSignUp ? (
         <div className="Intro-cushion">
           <button className="Intro-buttons" onClick={handleLoginClick}>Log In</button>
-          <button className="Intro-buttons" onClick={(e) => { e.preventDefault(); navigate("/signup"); }}>Sign Up</button>
+          <button className="Intro-buttons" onClick={handleSignUpClick}>Sign Up</button>
         </div>
       ) : showLogin ? (
         <div className='container'>
