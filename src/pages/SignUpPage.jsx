@@ -24,7 +24,7 @@ const SignUpPage = () => {
   const submission = (data) => {
     setLoading(true); // Start loading
     // Fetch the generated string for the ID
-    AxiosInstance.get('api/generated-string/')
+    AxiosInstance.get('api/getuserid/')
       .then((response) => {
         const generatedId = response.data.genString;
 
