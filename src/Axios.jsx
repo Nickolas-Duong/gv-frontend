@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = 'https://newgv-env.eba-8afbetm7.us-west-1.elasticbeanstalk.com/'
+const baseUrl = 'https://grapevinesocial.link/'
 
 const AxiosInstance = axios.create({
     baseURL: baseUrl,
