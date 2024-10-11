@@ -132,7 +132,7 @@ function Messages() {
       };
 
       // Post the new chat room to the backend
-      await AxiosInstance.post('chatrooms', newChatRoom);
+      await AxiosInstance.post('chatroom/', newChatRoom);
 
       // Fetch the updated chat rooms
       fetchUserChatRooms(currentUserID);
