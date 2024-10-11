@@ -121,7 +121,7 @@ function Messages() {
       if (!currentUserID || !foundUser) return; // Make sure both current user and found user are present
 
       // Generate CRID for the new chat room
-      const cridResponse = await AxiosInstance.get('/getChatRoomID/');
+      const cridResponse = await AxiosInstance.get('api/getchatroomid/');
       const chatRoomId = cridResponse.data.genString;
 
       // Create a new chat room with currentUserID as user1 and foundUser.id as user2
@@ -132,7 +132,7 @@ function Messages() {
       };
 
       // Post the new chat room to the backend
-      await AxiosInstance.post('/chatrooms/', newChatRoom);
+      await AxiosInstance.post('chatrooms', newChatRoom);
 
       // Fetch the updated chat rooms
       fetchUserChatRooms(currentUserID);
