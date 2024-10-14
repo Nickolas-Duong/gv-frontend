@@ -74,7 +74,7 @@ function Messages() {
 
     // Initialize WebSocket connection
       const initializeWebSocket = (chatRoomId) => {
-        const chatSocket = new ReconnectingWebSocket('wss://grapevinesocial.link/ws/chat/<chatRoomId>/');
+        const chatSocket = new ReconnectingWebSocket(`wss://grapevinesocial.link/ws/chat/${chatRoomId}/`);
         chatSocketRef.current = chatSocket;
 //             chatSocketRef.current.onopen = () => {
 //       console.log('WebSocket connection established');
