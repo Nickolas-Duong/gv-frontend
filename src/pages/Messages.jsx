@@ -4,8 +4,7 @@ import { useNavigate } from "react-router-dom";
 import GetSidebar from '../functions/display';
 import AxiosInstance from '../Axios'; // Assuming AxiosInstance is configured for API calls
 import MyTextField from '../forms/MyTextField'; // Assuming MyTextField is your custom text field component
-import ReconnectingWebSocket from 'reconnecting-websocket';
-
+import '../App.css';
 function Messages() {
   const { handleSubmit, control, reset } = useForm(); // Initialize react-hook-form
   const navigate = useNavigate();
@@ -16,8 +15,6 @@ function Messages() {
   const [foundUser, setFoundUser] = useState(null);
   const [newChat, setNewChat] = useState([]); // Store the created chat rooms
   const [currentUserID, setCurrentUserID] = useState(null); // Store the current user's ID
-  const [currentMID, setMID] = useState(null); // Store the MID
-  const chatSocketRef = useRef(null);  // Reference to WebSocket
 
   const chatContainerRef = useRef(null); // Reference to the chat container
 
@@ -66,93 +63,35 @@ function Messages() {
     }
   };
 
-    const getMid = async () => {
-        const messageIdResponse = await AxiosInstance.get('api/getmessageid/');
-        const messageId = messageIdResponse.data.genString;
-        setMID(messageId);
+  // Fetch messages for the selected chat room
+  const fetchMessagesForChatRoom = async (chatRoomId) => {
+    try {
+      const response = await AxiosInstance.get(`/api/get_messages/?crid=${chatRoomId}`);
+      const sortedMessages = response.data.sort((a, b) => new Date(a.sent) - new Date(b.sent)); // Sort by sent date
+      setChat(sortedMessages);
+
+      // Scroll to the bottom after messages are loaded
+      scrollToBottom();
+    } catch (error) {
+      console.error('Error fetching messages for chat room:', error);
     }
-
-    // Initialize WebSocket connection
-      const initializeWebSocket = (chatRoomId) => {
-        const chatSocket = new ReconnectingWebSocket(`wss://grapevinesocial.link/ws/chat/${chatRoomId}/`);
-        chatSocketRef.current = chatSocket;
-//             chatSocketRef.current.onopen = () => {
-//       console.log('WebSocket connection established');
-//     };
-        console.lo
-        chatSocket.onmessage = (e) => {
-          const data = JSON.parse(e.data);
-          setChat((prev) => [...prev, { sender: data.sender, description: data.message, sent: new Date() }]);
-        };
-
-        chatSocket.onclose = (event) => {
-          console.error('Chat socket closed unexpectedly', event);
-        };
-      };
-
-      useEffect(() => {
-        fetchCurrentUserID();
-      }, []);
-
-      useEffect(() => {
-        scrollToBottom();
-      }, [conversation]);
-
-      const scrollToBottom = () => {
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-        }
-      };
-
-      // Handle WebSocket messages for real-time chat
-      const sendMessageViaWebSocket = (message) => {
-        getMid();
-
-        chatSocketRef.current.send(JSON.stringify({
-          'mid': currentMID,
-          'message': message,
-          'sender': currentUserID,
-        }));
-      };
-
-      const onSubmit = async (data) => {
-        if (!data.message) return;
-
-        // Use WebSocket to send the message
-        sendMessageViaWebSocket(data.message);
-
-        reset();
-      };
-
-//   // Fetch messages for the selected chat room
-//   const fetchMessagesForChatRoom = async (chatRoomId) => {
-//     try {
-//       const response = await AxiosInstance.get(`/api/get_messages/?crid=${chatRoomId}`);
-//       const sortedMessages = response.data.sort((a, b) => new Date(a.sent) - new Date(b.sent)); // Sort by sent date
-//       setChat(sortedMessages);
-//
-//       // Scroll to the bottom after messages are loaded
-//       scrollToBottom();
-//     } catch (error) {
-//       console.error('Error fetching messages for chat room:', error);
-//     }
-//   };
+  };
 
   // Scroll to the bottom of the chat container
-//   const scrollToBottom = () => {
-//     if (chatContainerRef.current) {
-//       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-//     }
-//   };
-//
-//   useEffect(() => {
-//     fetchCurrentUserID(); // Fetch the current user's ID and chat rooms on component mount
-//   }, []);
-//
-//   // Scroll to the bottom whenever new messages are added
-//   useEffect(() => {
-//     scrollToBottom();
-//   }, [conversation]);
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentUserID(); // Fetch the current user's ID and chat rooms on component mount
+  }, []);
+
+  // Scroll to the bottom whenever new messages are added
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversation]);
 
   // Handle searching for a user by username
   const handleSearchUser = async () => {
@@ -208,36 +147,36 @@ function Messages() {
   };
 
   // Handle sending a new message
-//   const onSubmit = async (data) => {
-//     if (!data.message) return; // If no message entered, do nothing
-//
-//     try {
-//       // Fetch message ID from the backend
-//       const messageIdResponse = await AxiosInstance.get('api/getmessageid/');
-//       const messageId = messageIdResponse.data.genString;
-//
-//       // Post the new message to the backend
-//       await AxiosInstance.post('message/', {
-//         mid: messageId,
-//         crid: selectedMessage.id, // Use the selected chat room ID
-//         sender: currentUserID,
-//         description: data.message,
-//       });
-//
-//       // After sending the message, fetch updated messages
-//       fetchMessagesForChatRoom(selectedMessage.id);
-//       reset(); // Reset the input field
-//     } catch (error) {
-//       console.error('Error sending message:', error);
-//     }
-//   };
+  const onSubmit = async (data) => {
+    if (!data.message) return; // If no message entered, do nothing
+
+    try {
+      // Fetch message ID from the backend
+      const messageIdResponse = await AxiosInstance.get('api/getmessageid/');
+      const messageId = messageIdResponse.data.genString;
+
+      // Post the new message to the backend
+      await AxiosInstance.post('message/', {
+        mid: messageId,
+        crid: selectedMessage.id, // Use the selected chat room ID
+        sender: currentUserID,
+        description: data.message,
+      });
+
+      // After sending the message, fetch updated messages
+      fetchMessagesForChatRoom(selectedMessage.id);
+      reset(); // Reset the input field
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  };
 
   // Handle refreshing the current chat room
-//   const handleRefresh = () => {
-//     if (selectedMessage) {
-//       fetchMessagesForChatRoom(selectedMessage.id); // Re-fetch messages for the current chat room
-//     }
-//   };
+  const handleRefresh = () => {
+    if (selectedMessage) {
+      fetchMessagesForChatRoom(selectedMessage.id); // Re-fetch messages for the current chat room
+    }
+  };
 
   return (
     <div>
@@ -290,8 +229,7 @@ function Messages() {
                   className="message-item"
                   onClick={() => {
                     setSelectedMessage(chatRoom);
-//                     fetchMessagesForChatRoom(chatRoom.id);
-                    initializeWebSocket(chatRoom.id);
+                    fetchMessagesForChatRoom(chatRoom.id);
                   }}
                   style={{ cursor: 'pointer' }}
                 >
@@ -318,7 +256,7 @@ function Messages() {
                     margin: '10px 0',
                     padding: '10px',
                     borderRadius: '10px',
-                    backgroundColor: msg.sender === currentUserID ? '#DCF8C6' : '#FFF',
+                    backgroundColor: msg.sender === currentUserID ? '#DCF8C6' : '#D8BFD8',
                   }}
                 >
                   <p>{msg.description}</p>
@@ -351,18 +289,18 @@ function Messages() {
               >
                 Send
               </button>
-{/*               <button */}
-{/*                 type="button" */}
-{/*                 onClick={handleRefresh} */}
-{/*                 style={{ */}
-{/*                   marginLeft: '10px', */}
-{/*                   padding: '10px', */}
-{/*                   backgroundColor: '#D8BFD8',  // Light purple background (hexadecimal) */}
-{/*                   cursor: 'pointer' */}
-{/*                 }} */}
-{/*               > */}
-{/*                 &#x21bb;  */}{/* Refresh icon */}
-{/*               </button> */}
+              <button
+                type="button"
+                onClick={handleRefresh}
+                style={{
+                  marginLeft: '10px',
+                  padding: '10px',
+                  backgroundColor: '#D8BFD8',  // Light purple background (hexadecimal)
+                  cursor: 'pointer'
+                }}
+              >
+                &#x21bb; {/* Refresh icon */}
+              </button>
             </form>
           </div>
         )}
