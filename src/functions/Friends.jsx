@@ -1,6 +1,7 @@
 // GetFriends.js
 import React, { useEffect, useState } from 'react';
 import AxiosInstance from '../Axios';
+import '../App.css'
 
 const GetFriends = ({ userID }) => {
   const [friends, setFriends] = useState([]);
