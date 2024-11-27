@@ -28,8 +28,8 @@ const GetSidebar = () => {
           <h2 className="Sidebar-title">The Winery</h2>
           <NavItem href="/home" iconSrc="/icons/Home.png" altText="Home Icon" text="Home" />
           <NavItem href="/messages" iconSrc="/icons/Chat.png" altText="Chat Icon" text="Messages" />
-          <NavItem href="/Communities" iconSrc="/icons/Communities.png" altText="Community Icon" text="Communities" />
-          <NavItem href="/" iconSrc="/icons/Settings.png" altText="Setting Icon" text="Settings" />
+{/*           <NavItem href="/Communities" iconSrc="/icons/Communities.png" altText="Community Icon" text="Communities" /> */}
+{/*           <NavItem href="/" iconSrc="/icons/Settings.png" altText="Setting Icon" text="Settings" /> */}
         </ul>
       </nav>
 
