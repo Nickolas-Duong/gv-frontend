@@ -21,33 +21,36 @@ const SignUpPage = () => {
   const navigate = useNavigate();
 
   // Fetch the generated string and then submit the form
-  const submission = async (data) => {
+  const submission = (data) => {
     setLoading(true); // Start loading
-    try {
-      const response = await AxiosInstance.get('api/getuserid/');
-      const generatedId = response.data.genString;
+    // Fetch the generated string for the ID
+    AxiosInstance.get('api/getuserid/')
+      .then((response) => {
+        const generatedId = response.data.genString;
 
-      // Set the generated ID to the form data
-      setValue('id', generatedId);
+        // Set the generated ID to the form data
+        setValue('id', generatedId);
 
-      // Now submit the form with the generated ID
-      await AxiosInstance.post('users/', {
-        id: generatedId,
-        username: data.username,
-        userpassword: data.userpassword,
-        status: data.status,
-        email: data.email,
-        firstname: data.firstname,
-        lastname: data.lastname,
+        // Now submit the form with the generated ID
+        return AxiosInstance.post('users/', {
+          id: generatedId,
+          username: data.username,
+          userpassword: data.userpassword,
+          status: data.status,
+          email: data.email,
+          firstname: data.firstname,
+          lastname: data.lastname,
+        });
+      })
+      .then(() => {
+        navigate("/");  // Redirect after successful submission
+      })
+      .catch((error) => {
+        console.error('Sign up failed', error);
+      })
+      .finally(() => {
+        setLoading(false); // Stop loading
       });
-
-
-    } catch (error) {
-      console.error('Sign up failed', error);
-    } finally {
-      setLoading(false); // Stop loading
-      navigate("/");  // Redirect after successful submission
-    }
   };
 
   return (
