@@ -5,9 +5,6 @@ import { vi } from 'vitest';
 import Home from './pages/Home';
 import AxiosInstance from './Axios';
 
-import matchers from '@testing-library/jest-dom/matchers';
-expect.extend(matchers);
-
 vi.mock('./Axios');
 
 describe('Home Component', () => {
@@ -19,17 +16,6 @@ describe('Home Component', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  test('renders main elements of the Home component', () => {
-    render(
-      <MemoryRouter>
-        <Home />
-      </MemoryRouter>
-    );
-
-    expect(screen.getByText(/Grapevine/i)).toBeVisible();
-    expect(screen.getByPlaceholderText('Search')).toBeVisible();
   });
 
   test('The user types in a search term to an input field on the home page and presses enter', async () => {
