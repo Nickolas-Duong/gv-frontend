@@ -1,0 +1,140 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.modal-window {
+  background: #fff;
+  border-radius: 8px;
+  padding: 35px;
+  width: 500px; /* Increased width for more content space */
+  max-width: 90%; /* Ensure responsiveness */
+  max-height: 80%; /* Prevent vertical overflow */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: #f4f4f4;
+  color: #333;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 5px 5px 0 0;
+}
+
+.tabs button.active {
+  background: #007bff;
+  color: white;
+}
+
+.search-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-tab input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+/* Shared button styling */
+.confirm-button,
+.search-tab button {
+  padding: 10px 15px;
+  background: #DCF8C6;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+}
+
+.confirm-button:hover,
+.search-tab button:hover {
+  background: #c0e5aa;
+}
+
+.confirm-button:active,
+.search-tab button:active {
+  transform: scale(0.95);
+}
+
+.cancel-button {
+  padding: 10px 15px;
+  background: #D8BFD8;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+}
+
+.cancel-button:hover {
+  background: #c3a3c3;
+}
+
+.cancel-button:active {
+  transform: scale(0.95);
+}
+
+/* Styling the search results */
+.search-tab ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-tab li {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  background: #f9f9f9;
+  transition: box-shadow 0.3s ease;
+}
+
+.search-tab li:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-tab .cancel-button {
+  padding: 10px 15px;
+  background: #D8BFD8;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+}
+
+.search-tab .cancel-button:hover {
+  background: #c3a3c3;
+  }
+
+.search-tab .cancel-button:active {
+  transform: scale(0.95);
+}
