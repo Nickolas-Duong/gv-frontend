@@ -1,3 +1,21 @@
+/* Apply to headings */
+.Communities-body h2,
+.Comm-sidebar h2 {
+  font-family: 'VinesDay', sans-serif; /* Fallback to sans-serif */
+  font-size: 45px; /* Adjust font size for readability */
+  font-weight: bold; /* Ensure bold text */
+  color: black; /* Dark green color for consistency */
+  margin-bottom: 20px; /* Add spacing below heading */
+}
+
+/* Apply to headings */
+.Comm-sidebar h2 {
+  font-family: 'VinesDay', sans-serif; /* Fallback to sans-serif */
+  font-size: 32px; /* Adjust font size for readability */
+  font-weight: bold; /* Ensure bold text */
+  color: black; /* Dark green color for consistency */
+  margin-bottom: 20px; /* Add spacing below heading */
+}
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -137,4 +155,60 @@
 
 .search-tab .cancel-button:active {
   transform: scale(0.95);
+}
+
+.community-link {
+  background-color: #2E7D32; /* Darker green for improved contrast */
+  color: white;
+  padding: 10px 20px;
+  margin: 5px 0;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+.community-link:hover {
+  background-color: #255D27; /* Even darker green for hover effect */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); /* Stronger shadow on hover */
+  transform: translateY(-2px); /* Lift effect on hover */
+}
+
+.community-link:focus {
+  outline: 2px solid #333333; /* Accessible focus outline */
+  outline-offset: 2px;
+}
+
+.add-community-button {
+  background-color: #0056a3; /* Darker blue for better contrast */
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.add-community-button:hover {
+  background-color: #003d80; /* Even darker blue for hover effect */
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.add-community-button:focus {
+  outline: 2px solid #333333;
+  outline-offset: 2px;
+}
+
+.error-message {
+  color: #ff0000; /* Bright red for error messages */
+  font-size: 14px;
+  margin-top: 5px;
 }

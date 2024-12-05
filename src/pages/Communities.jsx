@@ -9,7 +9,6 @@ function Communities() {
   const { communitykey } = useParams(); // Extract community key from the route
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchKey, setSearchKey] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [userCommunities, setUserCommunities] = useState([]);
   const [currentUserID, setCurrentUserID] = useState(null);
@@ -19,6 +18,8 @@ function Communities() {
   const [newCommunityName, setNewCommunityName] = useState('');
   const [newCommunityDescription, setNewCommunityDescription] = useState(''); // Optional description
   const [currentCommunity, setCurrentCommunity] = useState(null); // Stores current community details
+  const [searchError, setSearchError] = useState(''); // Error message for search term
+  const [noSearchResults, setNoSearchResults] = useState(false); // Track if no search results were found
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -29,6 +30,8 @@ function Communities() {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+    setSearchError(''); // Clear error on input change
+    setNoSearchResults(false); // Reset no search results message
   };
 
   const fetchCurrentUserID = async () => {
@@ -45,7 +48,7 @@ function Communities() {
 
   const fetchCommunities = async (userid) => {
     try {
-      const response = await AxiosInstance.get(`/api/communities?user=${userid}`);
+      const response = await AxiosInstance.post(`/api/get_communities/`, { userid });
       setUserCommunities(response.data);
     } catch (error) {
       console.error('Error fetching communities:', error);
@@ -62,12 +65,17 @@ function Communities() {
   };
 
   const searchCommunities = async () => {
+    if (searchTerm.length < 2) {
+      setSearchError('Search term must be at least 2 characters.');
+      return;
+    }
+
     try {
-      const endpoint = showSearchTab
-        ? `/api/search-communities-name?name=${searchTerm}`
-        : `/api/search-communities-key?key=${searchKey}`;
-      const response = await AxiosInstance.get(endpoint);
-      setSearchResults(response.data);
+      const response = await AxiosInstance.post('api/search_communities/', { searchTerm });
+      const results = response.data;
+      setSearchResults(results);
+      setSearchError(''); // Clear error if search is successful
+      setNoSearchResults(results.length === 0); // Set noSearchResults if no communities are found
     } catch (error) {
       console.error('Error searching communities:', error);
     }
@@ -109,31 +117,55 @@ function Communities() {
     setNewCommunityName('');
     setNewCommunityDescription('');
     setSearchTerm('');
-    setSearchKey('');
+    setSearchError('');
     setSearchResults([]);
+    setNoSearchResults(false); // Reset no search results message
   };
 
   const handleCreateCommunity = async (e) => {
     e.preventDefault();
     try {
+      // Call APIs to get IDs
+      const communityIDResponse = await AxiosInstance.get('/api/getcommunitiesid/');
+      const communityID = communityIDResponse.data.genString;
+
+      const memberIDResponse = await AxiosInstance.get('/api/getmemberid/');
+      const memberID = memberIDResponse.data.genString;
+
+      const communityKeyResponse = await AxiosInstance.get('/api/getcommkey/');
+      const communityKey = communityKeyResponse.data.commKey;
+
+      // Prepare newCommunity and newMember data
       const newCommunity = {
         name: newCommunityName,
         description: newCommunityDescription,
         user: currentUserID,
+        communityid: communityID,
+        communitykey: communityKey,
       };
 
-      const response = await AxiosInstance.post('/api/create-community', newCommunity);
-      const createdCommunity = response.data;
+      const newMember = {
+        userid: currentUserID,
+        communityid: communityID,
+        memberid: memberID,
+      };
 
-      setUserCommunities([...userCommunities, createdCommunity]);
-      setShowAddPopup(false);
-      navigate(`/communities/${createdCommunity.key}`); // Use the community key
+      // Create community in the database
+      await AxiosInstance.post('api/create_community/', newCommunity);
+
+      // Add the current user as a member
+      await AxiosInstance.post('api/add_member/', newMember);
+
+      // Update the state
+      setUserCommunities([...userCommunities, { ...newCommunity, key: communityKey }]);
+      setShowAddPopup(false); // Close the modal after successful creation
     } catch (error) {
       console.error('Error creating community:', error);
     }
   };
 
   const handleCommunityClick = (communityKey) => {
+    setShowAddPopup(false); // Close the modal
     navigate(`/communities/${encodeURIComponent(communityKey)}`);
   };
 
@@ -161,19 +193,18 @@ function Communities() {
               </div>
 
               <div className="Communities-body">
-                <h2>Communities</h2>
+                <h2>Community Overview</h2>
                 {userCommunities.length > 0 ? (
                   userCommunities.map((community) => (
-                    <div key={community.id}>
+                    <div key={community.communityid}>
                       <h3>
                         <button
-                          onClick={() => handleCommunityClick(community.key)}
+                          onClick={() => handleCommunityClick(community.communitykey)}
                           className="community-link"
                         >
-                          {community.name}
+                          {community.communityname}
                         </button>
                       </h3>
-                      <button onClick={() => leaveCommunity(community)}>Leave</button>
                     </div>
                   ))
                 ) : (
@@ -184,10 +215,9 @@ function Communities() {
           ) : currentCommunity ? (
             <>
               {/* Individual Community Content */}
-              <h2>{currentCommunity.name}</h2>
-              <p>{currentCommunity.description}</p>
-              <p>Privacy: {currentCommunity.privacy}</p>
-              {/* Additional community-specific content */}
+              <h2>{currentCommunity.communityname}</h2>
+              <p>{currentCommunity.communitydescription}</p>
+              <p>Creator: {currentCommunity.ownerid}</p>
             </>
           ) : (
             <p>Loading community...</p>
@@ -197,16 +227,16 @@ function Communities() {
         <aside className="Comm-sidebar">
           <h2>Your Communities</h2>
           <button onClick={handleAddCommunity} className="add-community-button">
-            Add Community
+            Search/Create Community
           </button>
           <ul className="community-list">
             {userCommunities.map((community) => (
-              <li key={community.id}>
+              <li key={community.communityid}>
                 <button
-                  onClick={() => handleCommunityClick(community.key)}
+                  onClick={() => handleCommunityClick(community.communitykey)}
                   className="community-link"
                 >
-                  {community.name}
+                  {community.communityname}
                 </button>
               </li>
             ))}
@@ -230,24 +260,27 @@ function Communities() {
               <div className="search-tab">
                 <input
                   type="text"
-                  placeholder="Search by Name"
+                  placeholder="Search by Name or Community Key"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <input
-                  type="text"
-                  placeholder="Search by Community Key"
-                  value={searchKey}
-                  onChange={(e) => setSearchKey(e.target.value)}
-                />
-                <button onClick={searchCommunities}>Search</button>
+                <button onClick={searchCommunities} className="confirm-button">
+                  Search
+                </button>
                 <button onClick={handleCancel} className="cancel-button">
                   Cancel
                 </button>
+                {searchError && <p className="error-message">{searchError}</p>}
+                {noSearchResults && <p className="error-message">No communities found.</p>}
                 <ul>
                   {searchResults.map((result) => (
-                    <li key={result.id}>
-                      <p>{result.name}</p>
+                    <li key={result.communityid}>
+                      <button
+                        onClick={() => handleCommunityClick(result.communitykey)}
+                        className="community-link"
+                      >
+                        {result.communityname}
+                      </button>
                     </li>
                   ))}
                 </ul>

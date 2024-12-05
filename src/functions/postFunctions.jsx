@@ -133,7 +133,7 @@ const fetchUserPosts = async (userId) => {
   return (
     <div className="posts-section">
       <div className="posts-header">
-        {type === 'all' && <h2 style={{ fontStyle: 'italic' }}>The Trellis</h2>}
+        {type === 'all' && <h2 className="trellis-heading">The Trellis</h2>}
         {type === 'all' && (
           <div className="post-controls">
             <button className="refresh-button" onClick={refreshPosts}>
