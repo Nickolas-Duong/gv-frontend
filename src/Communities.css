@@ -212,3 +212,70 @@
   font-size: 14px;
   margin-top: 5px;
 }
+
+.members-container {
+  max-height: 300px; /* Set the height for the scrollable area */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  padding: 10px; /* Add padding for spacing */
+  margin-top: 10px; /* Add some margin above the container */
+  background-color: #f9f9f9; /* Optional: Light background color */
+  border-radius: 8px; /* Optional: Rounded corners */
+}
+
+.members-container ul {
+  list-style-type: none; /* Remove default list styling */
+  padding: 0;
+  margin: 0;
+}
+
+.members-container li {
+  padding: 5px 0; /* Add spacing between items */
+}
+
+.members-container li a {
+  text-decoration: none; /* Remove underline from links */
+  color: #007bff; /* Blue link color */
+}
+
+.members-container li a:hover {
+  text-decoration: underline; /* Add underline on hover */
+}
+
+.community-button {
+  background-color: #4caf50; /* Green for join */
+  color: white;
+  font-size: 16px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin: 10px 0;
+}
+
+.community-button.leave {
+  background-color: #f44336; /* Red for leave */
+}
+
+.community-button:hover {
+  background-color: #45a049; /* Slightly darker green on hover */
+}
+
+.community-button.leave:hover {
+  background-color: #d32f2f; /* Slightly darker red on hover */
+}
+
+.community-button:active {
+  transform: scale(0.95); /* Button shrink effect on click */
+}
+
+.membership-controls {
+  display: flex;
+  justify-content: flex-start; /* Align to the left */
+  margin-bottom: 20px;
+}
+
+.membership-controls .community-button {
+  margin-right: 15px; /* Add spacing between buttons if needed */
+}

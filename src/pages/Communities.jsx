@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
+import { useNavigate, useParams, Link } from 'react-router-dom'; // Import useParams and Link
 import AxiosInstance from '../Axios';
 import '../App.css';
 import GetSidebar from '../functions/display';
 import '../Communities.css';
+import CommunityPosts from '../functions/communityPosts'; // Import the CommunityPosts component
 
 function Communities() {
   const { communitykey } = useParams(); // Extract community key from the route
@@ -18,8 +19,56 @@ function Communities() {
   const [newCommunityName, setNewCommunityName] = useState('');
   const [newCommunityDescription, setNewCommunityDescription] = useState(''); // Optional description
   const [currentCommunity, setCurrentCommunity] = useState(null); // Stores current community details
+  const [ownerInfo, setOwnerInfo] = useState(null); // Stores the owner's user details
+  const [communityMembers, setCommunityMembers] = useState([]); // Stores the community members
   const [searchError, setSearchError] = useState(''); // Error message for search term
   const [noSearchResults, setNoSearchResults] = useState(false); // Track if no search results were found
+  const [isMember, setIsMember] = useState(false);
+
+const checkMembership = async () => {
+    if (!currentUserID || !currentCommunity?.communityid) return;
+
+    try {
+      const response = await AxiosInstance.post('/api/is_member/', {
+        userid: currentUserID,
+        communityid: currentCommunity.communityid,
+      });
+      setIsMember(response.data.isMember);
+    } catch (error) {
+      console.error('Error checking membership:', error);
+      setIsMember(false);
+    }
+  };
+
+  const joinCommunity = async () => {
+    try {
+      const memberIDResponse = await AxiosInstance.get('/api/getmemberid/');
+      const memberID = memberIDResponse.data.genString;
+
+      await AxiosInstance.post('/api/add_member/', {
+        userid: currentUserID,
+        communityid: currentCommunity.communityid,
+        memberid: memberID
+      });
+      await checkMembership(); // Refresh membership status
+      fetchCommunityDetails(communitykey); // Refresh community details
+    } catch (error) {
+      console.error('Error joining community:', error);
+    }
+  };
+
+  const leaveCommunity = async () => {
+    try {
+      await AxiosInstance.post('/api/remove_member/', {
+        userid: currentUserID,
+        communityid: currentCommunity.communityid,
+      });
+      await checkMembership(); // Refresh membership status
+      fetchCommunityDetails(communitykey); // Refresh community details
+    } catch (error) {
+      console.error('Error leaving community:', error);
+    }
+  };
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
@@ -58,7 +107,16 @@ function Communities() {
   const fetchCommunityDetails = async (key) => {
     try {
       const response = await AxiosInstance.get(`/api/community-details/${key}`);
-      setCurrentCommunity(response.data);
+      const community = response.data;
+      setCurrentCommunity(community);
+
+      // Fetch owner information
+      const ownerResponse = await AxiosInstance.get(`/api/get_user/${community.ownerid}`);
+      setOwnerInfo(ownerResponse.data);
+
+      // Fetch community members
+      const membersResponse = await AxiosInstance.get(`/api/get_community_members/${community.communityid}`);
+      setCommunityMembers(membersResponse.data);
     } catch (error) {
       console.error('Error fetching community details:', error);
     }
@@ -89,24 +147,14 @@ function Communities() {
 
   useEffect(() => {
     if (communitykey && communitykey !== 'overview') {
-      fetchCommunityDetails(communitykey);
+      fetchCommunityDetails(communitykey).then(() => {
+        checkMembership();
+      });
     } else {
       setCurrentCommunity(null); // Reset if on overview
+      setCommunityMembers([]); // Clear members when switching to overview
     }
   }, [communitykey]);
-
-  const leaveCommunity = async (community) => {
-    try {
-      await AxiosInstance.post('/api/leave-community', {
-        user: currentUserID,
-        community: community.id,
-      });
-      setCommunityStatus(`You have left ${community.name}.`);
-      fetchCommunities(currentUserID);
-    } catch (error) {
-      console.error('Error leaving community:', error);
-    }
-  };
 
   const handleAddCommunity = () => {
     setShowAddPopup(true);
@@ -125,7 +173,6 @@ function Communities() {
   const handleCreateCommunity = async (e) => {
     e.preventDefault();
     try {
-      // Call APIs to get IDs
       const communityIDResponse = await AxiosInstance.get('/api/getcommunitiesid/');
       const communityID = communityIDResponse.data.genString;
 
@@ -135,7 +182,6 @@ function Communities() {
       const communityKeyResponse = await AxiosInstance.get('/api/getcommkey/');
       const communityKey = communityKeyResponse.data.commKey;
 
-      // Prepare newCommunity and newMember data
       const newCommunity = {
         name: newCommunityName,
         description: newCommunityDescription,
@@ -150,13 +196,9 @@ function Communities() {
         memberid: memberID,
       };
 
-      // Create community in the database
       await AxiosInstance.post('api/create_community/', newCommunity);
-
-      // Add the current user as a member
       await AxiosInstance.post('api/add_member/', newMember);
 
-      // Update the state
       setUserCommunities([...userCommunities, { ...newCommunity, key: communityKey }]);
       setShowAddPopup(false); // Close the modal after successful creation
     } catch (error) {
@@ -181,7 +223,6 @@ function Communities() {
         <main className="App-main">
           {communitykey === 'overview' || !communitykey ? (
             <>
-              {/* Overview Content */}
               <div className="search-container">
                 <input
                   type="text"
@@ -214,34 +255,69 @@ function Communities() {
             </>
           ) : currentCommunity ? (
             <>
-              {/* Individual Community Content */}
               <h2>{currentCommunity.communityname}</h2>
               <p>{currentCommunity.communitydescription}</p>
-              <p>Creator: {currentCommunity.ownerid}</p>
+              {ownerInfo && (
+                <>
+                  <p>
+                    Creator: {ownerInfo.first_name} {ownerInfo.last_name}
+                  </p>
+                  {currentUserID === currentCommunity.ownerid && (
+                    <p>Community Key: {currentCommunity.communitykey}</p>
+                  )}
+                </>
+              )}
+                <div className="membership-controls">
+                <button
+                  className={`community-button ${isMember ? 'leave' : 'join'}`}
+                  onClick={isMember ? leaveCommunity : joinCommunity}
+                >
+                  {isMember ? 'Leave Community' : 'Join Community'}
+                </button>
+              </div>
+              <h3>Members</h3>
+              <div className="members-container">
+                <ul>
+                  {communityMembers.map((member) => (
+                    <li key={member.username}>
+                      <Link to={`/profile/${member.username}`}>
+                        @{member.username} - {member.first_name} {member.last_name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* Community Posts Section */}
+              <CommunityPosts
+                userID={currentUserID}
+                communityID={currentCommunity.communityid}
+              />
             </>
           ) : (
             <p>Loading community...</p>
           )}
         </main>
 
-        <aside className="Comm-sidebar">
-          <h2>Your Communities</h2>
-          <button onClick={handleAddCommunity} className="add-community-button">
-            Search/Create Community
-          </button>
-          <ul className="community-list">
-            {userCommunities.map((community) => (
-              <li key={community.communityid}>
-                <button
-                  onClick={() => handleCommunityClick(community.communitykey)}
-                  className="community-link"
-                >
-                  {community.communityname}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </aside>
+        {communitykey === 'overview' && (
+          <aside className="Comm-sidebar">
+            <h2>Your Communities</h2>
+            <button onClick={handleAddCommunity} className="add-community-button">
+              Search/Create Community
+            </button>
+            <ul className="community-list">
+              {userCommunities.map((community) => (
+                <li key={community.communityid}>
+                  <button
+                    onClick={() => handleCommunityClick(community.communitykey)}
+                    className="community-link"
+                  >
+                    {community.communityname}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
       </div>
 
       {showAddPopup && (
@@ -319,3 +395,7 @@ function Communities() {
 }
 
 export default Communities;
+
+  const handleAddCommunity = () => {
+    setShowAddPopup(true);
+  };
